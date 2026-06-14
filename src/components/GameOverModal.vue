@@ -1,16 +1,37 @@
 <script setup lang="ts">
+import type { SurvivalGoal, GoalProgress } from '@/types/game'
+
 interface Props {
   show: boolean
   finalTurn: number
   highScore: number
   isNewRecord: boolean
+  goals: SurvivalGoal[]
+  goalProgress: GoalProgress[]
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const emit = defineEmits<{
   restart: []
 }>()
+
+function getCompletedGoals() {
+  return props.goals.filter(goal => {
+    const progress = props.goalProgress.find(g => g.goalId === goal.id)
+    return progress?.completed
+  })
+}
+
+function formatReward(goal: SurvivalGoal): string {
+  const parts: string[] = []
+  if (goal.reward.health) parts.push(`❤️+${goal.reward.health}`)
+  if (goal.reward.hunger && goal.reward.hunger < 0) parts.push(`🍖${goal.reward.hunger}`)
+  if (goal.reward.thirst && goal.reward.thirst < 0) parts.push(`💧${goal.reward.thirst}`)
+  if (goal.reward.wood && goal.reward.wood > 0) parts.push(`🪵+${goal.reward.wood}`)
+  if (goal.reward.stone && goal.reward.stone > 0) parts.push(`🪨+${goal.reward.stone}`)
+  return parts.join(' ')
+}
 </script>
 
 <template>
@@ -40,6 +61,33 @@ const emit = defineEmits<{
                   <span v-if="isNewRecord" class="text-sm ml-1">🏆 新纪录！</span>
                 </span>
               </div>
+              <div class="border-t border-gray-700"></div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-400">完成目标</span>
+                <span class="text-xl font-bold text-cyan-400">
+                  🎯 {{ getCompletedGoals().length }}/{{ goals.length }}
+                </span>
+              </div>
+            </div>
+
+            <div v-if="getCompletedGoals().length > 0" class="bg-gray-800/50 rounded-2xl p-5 mb-6">
+              <h3 class="text-gray-300 text-sm font-medium mb-3">🏆 已完成目标</h3>
+              <div class="space-y-2">
+                <div
+                  v-for="goal in getCompletedGoals()"
+                  :key="goal.id"
+                  class="flex items-center justify-between bg-green-900/20 rounded-lg px-3 py-2"
+                >
+                  <div class="flex items-center gap-2">
+                    <span>{{ goal.icon }}</span>
+                    <span class="text-green-400 text-sm font-medium">{{ goal.title }}</span>
+                  </div>
+                  <span class="text-yellow-400/80 text-xs">{{ formatReward(goal) }}</span>
+                </div>
+              </div>
+            </div>
+            <div v-else class="bg-gray-800/50 rounded-2xl p-5 mb-6">
+              <p class="text-gray-500 text-sm text-center">本次未完成任何目标，再接再厉！</p>
             </div>
 
             <button

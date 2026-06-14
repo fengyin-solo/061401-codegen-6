@@ -4,9 +4,10 @@ import StatusPanel from '@/components/StatusPanel.vue'
 import ActionButtons from '@/components/ActionButtons.vue'
 import EventLog from '@/components/EventLog.vue'
 import GameOverModal from '@/components/GameOverModal.vue'
+import GoalPanel from '@/components/GoalPanel.vue'
 import { useGame } from '@/composables/useGame'
 
-const { state, highScore, canPerformAction, gatherWood, gatherStone, hunt, drink, restart } = useGame()
+const { state, highScore, goals, completedGoalsCount, canPerformAction, gatherWood, gatherStone, hunt, drink, restart } = useGame()
 
 const isNewRecord = computed(() => state.value.turn >= highScore.value && state.value.turn > 0)
 </script>
@@ -46,6 +47,11 @@ const isNewRecord = computed(() => state.value.turn >= highScore.value && state.
             :wood="state.wood"
             :stone="state.stone"
           />
+          <GoalPanel
+            :goals="goals"
+            :goal-progress="state.goalProgress"
+            :completed-count="completedGoalsCount"
+          />
         </div>
 
         <div>
@@ -77,6 +83,8 @@ const isNewRecord = computed(() => state.value.turn >= highScore.value && state.
       :final-turn="state.turn"
       :high-score="highScore"
       :is-new-record="isNewRecord"
+      :goals="goals"
+      :goal-progress="state.goalProgress"
       @restart="restart"
     />
   </div>
